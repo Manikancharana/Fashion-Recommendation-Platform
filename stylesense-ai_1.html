@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StyleSense AI — Intelligent Fashion Recommendation Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14171F;
+  --canvas:#FBF8F3;
+  --canvas-dim:#F1ECE3;
+  --coral:#FF6B4A;
+  --sage:#7C9585;
+  --mustard:#E8B84B;
+  --plum:#6B4E71;
+  --line:rgba(20,23,31,0.12);
+  --white:#ffffff;
+  --radius:2px;
+  --font-display:'Fraunces', serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
+a{color:inherit;}
+button{font-family:inherit;cursor:pointer;}
+img{max-width:100%;display:block;}
+
+.topbar{position:sticky;top:0;z-index:50;background:rgba(251,248,243,0.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+.topbar-inner{max-width:1240px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-0.02em;background:none;border:none;color:var(--ink);}
+.logo .wheel{width:26px;height:26px;flex:none;}
+nav.mainnav{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
+.navbtn{background:none;border:none;padding:9px 14px;font-size:13.5px;font-weight:500;color:var(--ink);border-radius:999px;letter-spacing:0.01em;transition:background .15s ease;}
+.navbtn:hover{background:var(--canvas-dim);}
+.navbtn.active{background:var(--ink);color:var(--canvas);}
+.cartcount{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;margin-left:6px;background:var(--coral);color:white;border-radius:999px;font-size:10px;font-weight:700;font-family:var(--font-mono);}
+.userchip{font-size:12px;font-family:var(--font-mono);color:var(--ink);opacity:.7;white-space:nowrap;}
+
+.view{display:none;max-width:1240px;margin:0 auto;padding:48px 24px 96px;animation:fadein .35s ease;}
+.view.active{display:block;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:var(--coral);font-weight:500;margin-bottom:14px;display:block;}
+h1.display{font-family:var(--font-display);font-weight:600;font-size:clamp(32px,5vw,58px);line-height:1.02;letter-spacing:-0.02em;margin:0 0 18px;}
+h1.display em{font-style:italic;font-weight:500;color:var(--coral);}
+p.lede{font-size:17px;line-height:1.6;max-width:560px;color:rgba(20,23,31,0.75);margin:0 0 28px;}
+
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--canvas);border:none;padding:13px 24px;border-radius:999px;font-size:13.5px;font-weight:600;letter-spacing:.01em;transition:transform .15s ease, background .15s ease;}
+.btn:hover{background:var(--coral);}
+.btn:active{transform:scale(.97);}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink);}
+.btn.ghost:hover{background:var(--ink);color:var(--canvas);}
+.btn.small{padding:9px 16px;font-size:12.5px;}
+.btn.full{width:100%;justify-content:center;}
+.btn:disabled{opacity:.4;cursor:not-allowed;background:var(--ink);}
+
+.hero{display:grid;grid-template-columns:1.1fr 0.9fr;gap:56px;align-items:center;}
+@media(max-width:860px){.hero{grid-template-columns:1fr;}}
+.hero-wheel-wrap{display:flex;justify-content:center;}
+#heroWheel{width:100%;max-width:360px;}
+
+.section-title{font-family:var(--font-display);font-size:clamp(24px,3vw,34px);font-weight:600;letter-spacing:-0.01em;margin:0 0 8px;}
+.section-sub{color:rgba(20,23,31,.65);font-size:14.5px;margin:0 0 32px;max-width:560px;}
+
+/* quick gender tiles */
+.tilegrid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin:48px 0 88px;}
+@media(max-width:760px){.tilegrid{grid-template-columns:repeat(2,1fr);}}
+.tile{position:relative;aspect-ratio:3/4;border-radius:6px;overflow:hidden;cursor:pointer;border:1px solid var(--line);}
+.tile img,.tile svg{width:100%;height:100%;object-fit:cover;transition:transform .3s ease;}
+.tile:hover img{transform:scale(1.06);}
+.tile .tilelabel{position:absolute;bottom:0;left:0;right:0;padding:14px 12px;background:linear-gradient(transparent,rgba(20,23,31,.75));color:white;font-family:var(--font-display);font-size:16px;font-weight:600;}
+
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.chip{padding:7px 15px;border-radius:999px;border:1px solid var(--line);background:transparent;font-size:12.5px;font-weight:500;}
+.chip.active{background:var(--ink);color:var(--canvas);border-color:var(--ink);}
+.filterrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;padding:14px 16px;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);}
+.filterrow select{padding:9px 12px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;font-family:var(--font-body);background:var(--canvas);color:var(--ink);}
+.filterrow .fcount{margin-left:auto;font-size:12px;color:rgba(20,23,31,.55);align-self:center;font-family:var(--font-mono);}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:22px;}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:transform .18s ease, box-shadow .18s ease;}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(20,23,31,0.08);}
+.card .imgwrap{aspect-ratio:4/5;overflow:hidden;background:var(--canvas-dim);}
+.card .imgwrap img,.card .imgwrap svg{width:100%;height:100%;object-fit:cover;display:block;}
+.card .info{padding:14px 16px 16px;}
+.card .cat{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(20,23,31,.5);display:flex;justify-content:space-between;}
+.card h3{font-family:var(--font-display);font-size:16.5px;margin:4px 0 2px;font-weight:600;}
+.card .brand{font-size:11.5px;color:rgba(20,23,31,.55);margin-bottom:6px;}
+.card .price{font-family:var(--font-mono);font-size:14px;font-weight:500;}
+.card .row{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.swatchdot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,0.15);flex:none;}
+
+.pd-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:48px;}
+@media(max-width:860px){.pd-grid{grid-template-columns:1fr;}}
+.pd-img{aspect-ratio:4/5;border-radius:var(--radius);overflow:hidden;background:var(--canvas-dim);}
+.pd-img img,.pd-img svg{width:100%;height:100%;object-fit:cover;display:block;}
+.matchgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:14px;}
+.sizerow{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0;}
+.sizebtn{padding:7px 13px;border:1.5px solid var(--line);background:white;border-radius:6px;font-size:12.5px;}
+.sizebtn.sel{border-color:var(--ink);background:var(--ink);color:white;}
+
+.tool-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center;}
+@media(max-width:760px){.tool-card{grid-template-columns:1fr;}}
+.colorpick-row{display:flex;align-items:center;gap:16px;margin-bottom:18px;}
+input[type=color]{width:56px;height:56px;border:none;border-radius:50%;padding:0;cursor:pointer;background:none;}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0;border-radius:50%;overflow:hidden;}
+input[type=color]::-webkit-color-swatch{border:2px solid var(--ink);border-radius:50%;}
+.hexlabel{font-family:var(--font-mono);font-size:15px;font-weight:500;}
+.tonelabel{font-size:12.5px;color:rgba(20,23,31,.6);margin-top:2px;}
+.palette-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.paletteswatch{width:52px;height:52px;border-radius:8px;position:relative;border:1px solid rgba(0,0,0,.08);}
+.paletteswatch span{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:9.5px;color:rgba(20,23,31,.55);white-space:nowrap;}
+
+.authwrap{max-width:400px;margin:0 auto;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;letter-spacing:.01em;}
+.field input,.field select{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--radius);font-family:var(--font-body);font-size:14px;background:var(--white);}
+.field input:focus,.field select:focus{outline:2px solid var(--coral);outline-offset:1px;border-color:var(--coral);}
+.formcard{background:var(--white);border:1px solid var(--line);padding:36px;border-radius:var(--radius);}
+.msg{font-size:13px;padding:10px 14px;border-radius:var(--radius);margin-bottom:16px;}
+.msg.err{background:#FDECEA;color:#9A3324;}
+.msg.ok{background:#EAF3EC;color:#2F5D3A;}
+.switchline{text-align:center;font-size:13px;margin-top:18px;color:rgba(20,23,31,.65);}
+.switchline button{background:none;border:none;color:var(--coral);font-weight:600;font-size:13px;padding:0;}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);}
+th{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:rgba(20,23,31,.55);font-weight:500;}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:36px;}
+.statcard{background:var(--white);border:1px solid var(--line);padding:20px 22px;border-radius:var(--radius);}
+.statcard .num{font-family:var(--font-display);font-size:32px;font-weight:600;}
+.statcard .lbl{font-size:12px;color:rgba(20,23,31,.6);margin-top:2px;}
+.admin-tag{background:var(--plum);color:white;font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:999px;margin-left:8px;}
+
+.cartrow{display:flex;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);}
+.cartrow img,.cartrow svg{width:64px;height:80px;object-fit:cover;border-radius:4px;flex:none;}
+.qtybtn{width:26px;height:26px;border:1px solid var(--line);background:white;border-radius:50%;font-size:14px;line-height:1;}
+.cartsummary{background:var(--white);border:1px solid var(--line);padding:24px;border-radius:var(--radius);}
+.sumrow{display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px;}
+.sumrow.total{font-weight:700;font-size:17px;border-top:1px solid var(--line);padding-top:14px;margin-top:6px;}
+
+.empty{text-align:center;padding:60px 20px;color:rgba(20,23,31,.55);}
+.empty .big{font-size:38px;margin-bottom:12px;}
+
+#chatToggle{position:fixed;bottom:26px;right:26px;z-index:80;width:60px;height:60px;border-radius:50%;background:var(--ink);color:var(--canvas);border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(20,23,31,.25);transition:transform .15s ease, background .15s ease;}
+#chatToggle:hover{background:var(--coral);transform:scale(1.05);}
+#chatPanel{position:fixed;bottom:98px;right:26px;z-index:80;width:380px;max-width:90vw;height:520px;background:var(--white);border:1px solid var(--line);border-radius:12px;box-shadow:0 24px 48px rgba(20,23,31,.22);display:none;flex-direction:column;overflow:hidden;}
+#chatPanel.open{display:flex;}
+.chat-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.chat-head h4{margin:0;font-family:var(--font-display);font-size:16px;}
+.chat-head p{margin:2px 0 0;font-size:11.5px;color:rgba(20,23,31,.55);}
+.chat-body{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px;}
+.bubble{max-width:88%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.5;}
+.bubble.bot{background:var(--canvas-dim);align-self:flex-start;border-bottom-left-radius:4px;}
+.bubble.user{background:var(--ink);color:var(--canvas);align-self:flex-end;border-bottom-right-radius:4px;}
+.bubble.typing{font-style:italic;color:rgba(20,23,31,.5);}
+.chatpicks{display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start;max-width:88%;}
+.chatpick{display:flex;align-items:center;gap:6px;background:white;border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 4px;font-size:11px;}
+.chatpick img,.chatpick svg{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;}
+.chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);}
+.chat-input input{flex:1;border:1px solid var(--line);border-radius:999px;padding:10px 14px;font-size:13px;font-family:inherit;}
+.chat-input button{background:var(--ink);color:white;border:none;width:38px;height:38px;border-radius:50%;flex:none;}
+.chat-input button:hover{background:var(--coral);}
+.chip-suggest{font-size:11px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:white;white-space:nowrap;}
+
+footer{border-top:1px solid var(--line);padding:32px 24px;text-align:center;font-size:12px;color:rgba(20,23,31,.5);font-family:var(--font-mono);}
+
+@media(max-width:640px){
+  .topbar-inner{flex-wrap:wrap;}
+  nav.mainnav{order:3;width:100%;justify-content:flex-start;overflow-x:auto;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <button class="logo" onclick="showView('home')">
+      <svg class="wheel" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="#14171F" stroke-width="1.4"/><path d="M20 20 L20 2 A18 18 0 0 1 35.6 11 Z" fill="#FF6B4A"/><path d="M20 20 L35.6 11 A18 18 0 0 1 35.6 29 Z" fill="#E8B84B"/><path d="M20 20 L35.6 29 A18 18 0 0 1 20 38 Z" fill="#7C9585"/><path d="M20 20 L20 38 A18 18 0 0 1 4.4 29 Z" fill="#6B4E71"/><path d="M20 20 L4.4 29 A18 18 0 0 1 4.4 11 Z" fill="#14171F"/><path d="M20 20 L4.4 11 A18 18 0 0 1 20 2 Z" fill="#FBF8F3" stroke="#14171F" stroke-width="0.5"/></svg>
+      StyleSense <em style="font-style:italic;color:var(--coral)">AI</em>
+    </button>
+    <nav class="mainnav">
+      <button class="navbtn" data-nav="home" onclick="showView('home')">Home</button>
+      <button class="navbtn" data-nav="shop" onclick="showView('shop')">Shop</button>
+      <button class="navbtn" data-nav="match" onclick="showView('match')">Color Match</button>
+      <button class="navbtn" data-nav="cart" onclick="showView('cart')">Cart<span class="cartcount" id="cartCount">0</span></button>
+      <button class="navbtn" id="authNavBtn" data-nav="login" onclick="showView('login')">Login</button>
+      <button class="navbtn" data-nav="admin" onclick="showView('admin')">Admin</button>
+    </nav>
+    <span class="userchip" id="userChip"></span>
+  </div>
+</div>
+
+<!-- HOME -->
+<section class="view active" id="view-home">
+  <div class="hero">
+    <div>
+      <span class="eyebrow">Never guess an outfit again</span>
+      <h1 class="display">Your shirt already knows<br>which <em>pant</em> it wants.</h1>
+      <p class="lede">StyleSense AI reads the colour of anything in your wardrobe and tells you exactly what pairs with it — for men, women, boys and girls — using real colour theory, not guesswork.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn" onclick="showView('match')">Match a colour →</button>
+        <button class="btn ghost" onclick="showView('shop')">Browse the shop</button>
+      </div>
+    </div>
+    <div class="hero-wheel-wrap">
+      <svg id="heroWheel" viewBox="0 0 300 300">
+        <defs><filter id="soft"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-opacity="0.15"/></filter></defs>
+        <g filter="url(#soft)" id="heroWheelSegments"></g>
+        <circle cx="150" cy="150" r="46" fill="#FBF8F3" stroke="#14171F" stroke-width="1.5"/>
+        <text x="150" y="145" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#14171F" letter-spacing="1">PICK A</text>
+        <text x="150" y="160" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#14171F" letter-spacing="1">COLOUR</text>
+      </svg>
+    </div>
+  </div>
+
+  <span class="eyebrow" style="margin-top:64px;">Shop by</span>
+  <h2 class="section-title" style="margin-bottom:0;">Everyone in the family</h2>
+  <div class="tilegrid" id="tileGrid"></div>
+
+  <div>
+    <span class="eyebrow">The problem</span>
+    <h2 class="section-title">"I own the shirt. I never know the pant."</h2>
+    <p class="section-sub">Most people don't lack style — they lack a fast way to check whether two colours actually work together. StyleSense AI closes that gap for everyone: men figuring out shirt-and-trouser pairs, women building a dress-and-accessory look, parents dressing kids for a school event.</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin-bottom:64px;">
+      <div class="statcard"><div class="num">HSL</div><div class="lbl">Real colour-theory engine — complementary, analogous &amp; triadic matching</div></div>
+      <div class="statcard"><div class="num">AI</div><div class="lbl">Chatbot stylist that recommends exact catalogue pieces, not vague tips</div></div>
+      <div class="statcard"><div class="num">1-Click</div><div class="lbl">"Complete the look" suggestions on every product page</div></div>
+    </div>
+  </div>
+
+  <span class="eyebrow">Featured</span>
+  <h2 class="section-title">Picks matched by colour this week</h2>
+  <div class="grid" id="featuredGrid"></div>
+</section>
+
+<!-- SHOP -->
+<section class="view" id="view-shop">
+  <span class="eyebrow">Catalogue</span>
+  <h2 class="section-title">Shop the collection</h2>
+  <p class="section-sub">Filter by who it's for, category, size, colour or brand — or sort by price.</p>
+  <div class="filterbar" id="genderBar"></div>
+  <div class="filterrow">
+    <select id="fCat" onchange="applyFilters()"></select>
+    <select id="fBrand" onchange="applyFilters()"></select>
+    <select id="fSize" onchange="applyFilters()"></select>
+    <select id="fColor" onchange="applyFilters()"></select>
+    <select id="fSort" onchange="applyFilters()">
+      <option value="featured">Sort: Featured</option>
+      <option value="lowhigh">Price: Low to High</option>
+      <option value="highlow">Price: High to Low</option>
+      <option value="az">Name: A–Z</option>
+    </select>
+    <span class="fcount" id="resultCount"></span>
+  </div>
+  <div class="grid" id="productGrid"></div>
+</section>
+
+<!-- PRODUCT DETAIL -->
+<section class="view" id="view-product">
+  <button class="btn ghost small" onclick="showView('shop')" style="margin-bottom:28px;">← Back to shop</button>
+  <div class="pd-grid" id="productDetailBody"></div>
+  <div style="margin-top:64px;">
+    <span class="eyebrow">Complete the look</span>
+    <h2 class="section-title">Matches for this piece</h2>
+    <p class="section-sub" id="matchExplain"></p>
+    <div class="matchgrid" id="pdMatches"></div>
+  </div>
+</section>
+
+<!-- COLOR MATCH TOOL -->
+<section class="view" id="view-match">
+  <span class="eyebrow">The engine</span>
+  <h2 class="section-title">Match any colour</h2>
+  <p class="section-sub">Pick the colour of the piece you already own and see the palette that pairs with it, plus real catalogue items in those tones.</p>
+  <div class="tool-card">
+    <div>
+      <div class="colorpick-row">
+        <input type="color" id="colorInput" value="#3B5998" oninput="onColorPick(this.value)">
+        <div><div class="hexlabel" id="hexOut">#3B5998</div><div class="tonelabel" id="toneOut">Deep denim blue</div></div>
+      </div>
+      <div class="tonelabel" style="margin-bottom:6px;">Recommended palette</div>
+      <div class="palette-row" id="paletteRow" style="margin-bottom:28px;"></div>
+      <div style="height:14px;"></div>
+    </div>
+    <div>
+      <div class="tonelabel" style="margin-bottom:10px;">Why these work</div>
+      <p style="font-size:13.5px;line-height:1.6;color:rgba(20,23,31,.75);" id="theoryExplain"></p>
+    </div>
+  </div>
+  <div style="margin-top:56px;">
+    <span class="eyebrow">Catalogue matches</span>
+    <h2 class="section-title">Pieces in these tones</h2>
+    <div class="matchgrid" id="toolMatches" style="margin-top:20px;"></div>
+  </div>
+</section>
+
+<!-- CART -->
+<section class="view" id="view-cart">
+  <span class="eyebrow">Your bag</span>
+  <h2 class="section-title">Cart</h2>
+  <div id="cartBody"></div>
+</section>
+
+<!-- LOGIN -->
+<section class="view" id="view-login">
+  <div class="authwrap">
+    <div class="formcard">
+      <h2 class="section-title" style="margin-bottom:6px;">Welcome back</h2>
+      <p class="section-sub" style="margin-bottom:24px;">Log in to save your cart and get personalised matches.</p>
+      <div id="loginMsg"></div>
+      <div class="field"><label>Email</label><input id="loginEmail" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="loginPass" type="password" placeholder="••••••••"></div>
+      <button class="btn full" onclick="doLogin()">Log in</button>
+      <div class="switchline">No account yet? <button onclick="showView('register')">Register</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- REGISTER -->
+<section class="view" id="view-register">
+  <div class="authwrap">
+    <div class="formcard">
+      <h2 class="section-title" style="margin-bottom:6px;">Create your account</h2>
+      <p class="section-sub" style="margin-bottom:24px;">Takes 20 seconds. Session-only for this demo.</p>
+      <div id="regMsg"></div>
+      <div class="field"><label>Full name</label><input id="regName" type="text" placeholder="Jordan Rivera"></div>
+      <div class="field"><label>Email</label><input id="regEmail" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="regPass" type="password" placeholder="Minimum 6 characters"></div>
+      <button class="btn full" onclick="doRegister()">Create account</button>
+      <div class="switchline">Already registered? <button onclick="showView('login')">Log in</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ADMIN -->
+<section class="view" id="view-admin">
+  <div id="adminLoginWrap" class="authwrap">
+    <div class="formcard">
+      <h2 class="section-title" style="margin-bottom:6px;">Admin access</h2>
+      <p class="section-sub" style="margin-bottom:24px;">Demo credentials — <strong>admin@stylesense.ai</strong> / <strong>admin123</strong></p>
+      <div id="adminMsg"></div>
+      <div class="field"><label>Admin email</label><input id="adminEmail" type="email" placeholder="admin@stylesense.ai"></div>
+      <div class="field"><label>Password</label><input id="adminPass" type="password" placeholder="••••••••"></div>
+      <button class="btn full" onclick="doAdminLogin()">Enter dashboard</button>
+    </div>
+  </div>
+  <div id="adminDashWrap" style="display:none;max-width:1240px;">
+    <span class="eyebrow">Admin<span class="admin-tag">LIVE SESSION</span></span>
+    <h2 class="section-title">Dashboard</h2>
+    <div class="statgrid">
+      <div class="statcard"><div class="num" id="statUsers">0</div><div class="lbl">Registered users</div></div>
+      <div class="statcard"><div class="num" id="statProducts">0</div><div class="lbl">Products in catalogue</div></div>
+      <div class="statcard"><div class="num" id="statOrders">0</div><div class="lbl">Orders placed</div></div>
+      <div class="statcard"><div class="num" id="statRevenue">₹0</div><div class="lbl">Revenue this session</div></div>
+    </div>
+    <h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:12px;">Recent orders</h3>
+    <div style="background:white;border:1px solid var(--line);border-radius:var(--radius);overflow:auto;margin-bottom:40px;">
+      <table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th></tr></thead><tbody id="ordersTable"></tbody></table>
+    </div>
+    <h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:12px;">Registered users</h3>
+    <div style="background:white;border:1px solid var(--line);border-radius:var(--radius);overflow:auto;margin-bottom:24px;">
+      <table><thead><tr><th>Name</th><th>Email</th></tr></thead><tbody id="usersTable"></tbody></table>
+    </div>
+    <button class="btn ghost small" onclick="adminLogout()">Log out of admin</button>
+  </div>
+</section>
+
+<footer>StyleSense AI — HTML · CSS · JavaScript · Claude API · Colour-theory engine — front-end prototype, session-only data</footer>
+
+<button id="chatToggle" onclick="toggleChat()" aria-label="Open stylist chat">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+</button>
+<div id="chatPanel">
+  <div class="chat-head">
+    <div><h4>StyleSense Stylist</h4><p>Ask about any colour or outfit</p></div>
+    <button onclick="toggleChat()" style="background:none;border:none;font-size:18px;">✕</button>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div style="display:flex;gap:6px;padding:0 12px 10px;overflow-x:auto;">
+    <button class="chip-suggest" onclick="sendSuggested('I have a maroon shirt, what pants go with it?')">Maroon shirt →?</button>
+    <button class="chip-suggest" onclick="sendSuggested('What goes with a mustard yellow kurti for my mom?')">Mustard kurti →?</button>
+    <button class="chip-suggest" onclick="sendSuggested('Suggest an outfit for my daughter, age 6, for a birthday party')">Girls party outfit</button>
+  </div>
+  <div class="chat-input">
+    <input id="chatInput" type="text" placeholder="e.g. I have a navy shirt..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()">→</button>
+  </div>
+</div>
+
+<script>
+/* ============================= IMAGE SOURCE ============================= */
+/* Real product photography, sourced from Unsplash's direct CDN (images.unsplash.com) —
+   verified, stable URLs, free for commercial use. Every image still has a same-colour
+   inline-icon fallback wired through onerror, so a card never shows a broken image even
+   on a restrictive network. */
+const PHOTO_MAP = {
+  1:"1624835567150-0c530a20d8cc", 2:"1521572163474-6864f9cf17ab", 3:"1642764873654-9eef0467b342",
+  4:"1714143164072-7646ef5cb24d", 5:"1542272604-787c3835535d", 7:"1605518216938-7c31b7b14ad0",
+  15:"1668069226492-508742b03147", 18:"1617137984095-74e4e5e3613f", 19:"1770359993283-a2c2f386584e",
+  20:"1727835523545-70ee992b5763", 8:"1753192105151-afa3e56d8b12", 9:"1610189012906-4c0aa9b9781e",
+  10:"1633077705107-8f53a004218f", 11:"1597897569252-9df44c7de0db", 12:"1614098097306-c67b8020c04e",
+  13:"1710967074868-2041e4f44c17", 16:"1608231387042-66d1773070a5", 21:"1616313253719-c46514cddee1",
+  22:"1614098097306-c67b8020c04e", 23:"1668069226492-508742b03147", 24:"1710967074868-2041e4f44c17",
+  25:"1502451885777-16c98b07834a", 26:"1502451885777-16c98b07834a", 27:"1725147874938-7904e3362841",
+  28:"1608231387042-66d1773070a5", 29:"1620774760711-caa4c94d683a", 30:"1590995385808-7eb142fde16a",
+  31:"1604482858862-1db908a653e4", 32:"1533867617858-e7b97e060509", 14:"1533867617858-e7b97e060509",
+  17:"1622207691293-5cd80466dab3", 33:"1590995385808-7eb142fde16a", 34:"1614253429340-98120bd6d753",
+};
+function photoUrl(id){ return `https://images.unsplash.com/photo-${id}?w=500&h=625&fit=crop&auto=format&q=70`; }
+function lightTint(hex){
+  const {h} = hexToHsl(hex);
+  return hslToHex(h, 38, 90);
+}
+function shade(hex, amt){
+  const {h,s,l} = hexToHsl(hex);
+  return hslToHex(h, s, Math.max(4, Math.min(96, l+amt)));
+}
+const ICONS = {
+  Shirts: (c,d)=>`<path d="M62 46 L92 30 L112 30 L142 46 L162 70 L138 88 L128 76 L128 220 L76 220 L76 76 L66 88 L42 70 Z" fill="${c}" stroke="${d}" stroke-width="3"/>`,
+  Pants: (c,d)=>`<path d="M70 34 L134 34 L142 220 L104 220 L102 118 L100 220 L62 220 Z" fill="${c}" stroke="${d}" stroke-width="3"/>`,
+  Dresses: (c,d)=>`<path d="M78 32 L92 22 L112 22 L126 32 L120 66 L154 214 L50 214 L84 66 Z" fill="${c}" stroke="${d}" stroke-width="3"/>`,
+  Outerwear: (c,d)=>`<path d="M58 44 L94 26 L110 26 L146 44 L172 78 L146 96 L134 82 L134 222 L70 222 L70 82 L58 96 L32 78 Z" fill="${c}" stroke="${d}" stroke-width="3"/>`,
+  Ethnic: (c,d)=>`<path d="M76 40 L92 24 L112 24 L128 40 L146 66 L128 82 L120 70 L134 236 L70 236 L84 70 L76 82 L58 66 Z" fill="${c}" stroke="${d}" stroke-width="3"/>`,
+  Footwear: (c,d)=>`<path d="M40 190 Q40 156 78 152 L146 148 Q168 146 182 162 L200 178 Q214 188 200 202 L200 210 L40 210 Z" fill="${c}" stroke="${d}" stroke-width="3"/>`,
+  Accessories: (c,d)=>`<path d="M60 110 Q60 74 102 74 Q144 74 144 110 L144 118 L164 118 L172 220 L32 220 L40 118 L60 118 Z" fill="${c}" stroke="${d}" stroke-width="3"/><path d="M78 110 L78 92 Q78 66 102 66 Q126 66 126 92 L126 110" fill="none" stroke="${d}" stroke-width="4"/>`,
+};
+function iconSVGFor(cat, color, name){
+  const bg = isNeutral(color) ? '#EDE7DC' : lightTint(color);
+  const dark = shade(color, -28);
+  const draw = ICONS[cat] || ICONS.Shirts;
+  return `<svg viewBox="0 0 204 250" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${name||''}">
+    <rect width="204" height="250" fill="${bg}"/>
+    ${draw(color, dark)}
+  </svg>`;
+}
+function handleImgError(img){
+  img.onerror = null;
+  const wrap = document.createElement('div');
+  wrap.style.width = '100%'; wrap.style.height = '100%';
+  wrap.innerHTML = iconSVGFor(img.dataset.cat, img.dataset.color, img.alt);
+  img.replaceWith(wrap);
+}
+function imgTag(p, cls){
+  const pid = PHOTO_MAP[p.id];
+  if(pid){
+    return `<img class="${cls||''}" src="${photoUrl(pid)}" alt="${p.name}" loading="lazy"
+      data-color="${p.color}" data-cat="${p.cat}"
+      style="width:100%;height:100%;object-fit:cover;display:block;"
+      onerror="handleImgError(this)">`;
+  }
+  return `<div class="${cls||''}" style="width:100%;height:100%;">${iconSVGFor(p.cat, p.color, p.name)}</div>`;
+}
+
+/* ============================= DATA ============================= */
+const PRODUCTS = [
+  // MEN
+  {id:1, name:"Oxford Weave Shirt", cat:"Shirts", gender:"Men", color:"#3B5998", colorName:"Blue", price:1499, brand:"Northline", sizes:["S","M","L","XL"], photoTag:"mens-shirt,fashion"},
+  {id:2, name:"Classic White Shirt", cat:"Shirts", gender:"Men", color:"#F5F3EE", colorName:"White", price:1299, brand:"Studio Noir", sizes:["S","M","L","XL","XXL"], photoTag:"white-shirt,men"},
+  {id:3, name:"Rust Linen Shirt", cat:"Shirts", gender:"Men", color:"#B5562B", colorName:"Orange", price:1699, brand:"Roots & Rivet", sizes:["M","L","XL"], photoTag:"linen-shirt,men"},
+  {id:4, name:"Charcoal Slim Trousers", cat:"Pants", gender:"Men", color:"#3A3A3C", colorName:"Grey", price:1899, brand:"Northline", sizes:["30","32","34","36"], photoTag:"mens-trousers"},
+  {id:5, name:"Beige Chino", cat:"Pants", gender:"Men", color:"#D8CBB8", colorName:"Beige", price:1599, brand:"Sunday Field", sizes:["30","32","34","36"], photoTag:"chino-pants,men"},
+  {id:7, name:"Denim Straight Jeans", cat:"Pants", gender:"Men", color:"#3B5998", colorName:"Blue", price:2099, brand:"Roots & Rivet", sizes:["30","32","34","36"], photoTag:"mens-jeans"},
+  {id:15, name:"Black Ankle Boots", cat:"Footwear", gender:"Men", color:"#14171F", colorName:"Black", price:3499, brand:"Northline", sizes:["7","8","9","10","11"], photoTag:"mens-boots"},
+  {id:18, name:"Navy Blazer", cat:"Outerwear", gender:"Men", color:"#1B2A4A", colorName:"Blue", price:3999, brand:"Studio Noir", sizes:["M","L","XL"], photoTag:"mens-blazer"},
+  {id:19, name:"Cream Kurta", cat:"Ethnic", gender:"Men", color:"#F1ECE3", colorName:"White", price:1999, brand:"Roots & Rivet", sizes:["M","L","XL"], photoTag:"kurta,men"},
+  {id:20, name:"Forest Green Nehru Jacket", cat:"Ethnic", gender:"Men", color:"#1F6F54", colorName:"Green", price:2799, brand:"Sunday Field", sizes:["M","L","XL"], photoTag:"nehru-jacket"},
+  // WOMEN
+  {id:8, name:"Emerald Wrap Dress", cat:"Dresses", gender:"Women", color:"#1F6F54", colorName:"Green", price:2999, brand:"Meadow & Co", sizes:["XS","S","M","L"], photoTag:"green-dress,women"},
+  {id:9, name:"Mustard A-line Dress", cat:"Dresses", gender:"Women", color:"#E8B84B", colorName:"Yellow", price:2699, brand:"Meadow & Co", sizes:["XS","S","M","L"], photoTag:"yellow-dress,women"},
+  {id:10, name:"Plum Velvet Dress", cat:"Dresses", gender:"Women", color:"#6B4E71", colorName:"Purple", price:3299, brand:"Studio Noir", sizes:["S","M","L"], photoTag:"velvet-dress,women"},
+  {id:11, name:"Coral Kurti", cat:"Ethnic", gender:"Women", color:"#FF6B4A", colorName:"Orange", price:1899, brand:"Meadow & Co", sizes:["S","M","L","XL"], photoTag:"kurti,women"},
+  {id:12, name:"Ivory Dupatta", cat:"Ethnic", gender:"Women", color:"#F5F3EE", colorName:"White", price:899, brand:"Meadow & Co", sizes:["Free"], photoTag:"dupatta"},
+  {id:13, name:"Sage Ethnic Set", cat:"Ethnic", gender:"Women", color:"#7C9585", colorName:"Green", price:2499, brand:"Meadow & Co", sizes:["S","M","L"], photoTag:"salwar-suit"},
+  {id:16, name:"Cream Canvas Sneaker", cat:"Footwear", gender:"Women", color:"#F1ECE3", colorName:"White", price:2299, brand:"Sunday Field", sizes:["5","6","7","8"], photoTag:"womens-sneakers"},
+  {id:21, name:"Berry Blouse", cat:"Shirts", gender:"Women", color:"#8E3B5A", colorName:"Pink", price:1399, brand:"Meadow & Co", sizes:["XS","S","M","L"], photoTag:"blouse,women"},
+  {id:22, name:"Teal Palazzo Pants", cat:"Pants", gender:"Women", color:"#1E6B6B", colorName:"Green", price:1799, brand:"Meadow & Co", sizes:["S","M","L"], photoTag:"palazzo-pants"},
+  {id:23, name:"Black Heels", cat:"Footwear", gender:"Women", color:"#14171F", colorName:"Black", price:2899, brand:"Studio Noir", sizes:["5","6","7","8"], photoTag:"black-heels"},
+  {id:24, name:"Rose Saree", cat:"Ethnic", gender:"Women", color:"#C97E8B", colorName:"Pink", price:3799, brand:"Roots & Rivet", sizes:["Free"], photoTag:"saree"},
+  // BOYS
+  {id:25, name:"Sky Blue Polo Tee", cat:"Shirts", gender:"Boys", color:"#6B9AC4", colorName:"Blue", price:599, brand:"Little Kinder", sizes:["2-3Y","4-5Y","6-7Y","8-9Y"], photoTag:"boy,polo-shirt"},
+  {id:26, name:"Olive Cargo Shorts", cat:"Pants", gender:"Boys", color:"#5B6C4F", colorName:"Green", price:699, brand:"Little Kinder", sizes:["2-3Y","4-5Y","6-7Y","8-9Y"], photoTag:"boy,shorts"},
+  {id:27, name:"Navy Blazer Set (Kids)", cat:"Outerwear", gender:"Boys", color:"#1B2A4A", colorName:"Blue", price:1899, brand:"Little Kinder", sizes:["4-5Y","6-7Y","8-9Y"], photoTag:"boy,blazer"},
+  {id:28, name:"Grey Sneakers (Kids)", cat:"Footwear", gender:"Boys", color:"#8A8A8E", colorName:"Grey", price:1199, brand:"Little Kinder", sizes:["10C","11C","12C","13C","1"], photoTag:"kids-sneakers"},
+  // GIRLS
+  {id:29, name:"Blush Pink Frock", cat:"Dresses", gender:"Girls", color:"#E8A9B8", colorName:"Pink", price:1099, brand:"Little Kinder", sizes:["2-3Y","4-5Y","6-7Y","8-9Y"], photoTag:"girl,dress"},
+  {id:30, name:"Lemon Yellow Frock", cat:"Dresses", gender:"Girls", color:"#F0D264", colorName:"Yellow", price:999, brand:"Little Kinder", sizes:["2-3Y","4-5Y","6-7Y","8-9Y"], photoTag:"girl,yellow-dress"},
+  {id:31, name:"Lavender Leggings Set", cat:"Pants", gender:"Girls", color:"#A98CC4", colorName:"Purple", price:899, brand:"Little Kinder", sizes:["4-5Y","6-7Y","8-9Y","10-12Y"], photoTag:"girl,leggings"},
+  {id:32, name:"Mary Jane Shoes (Kids)", cat:"Footwear", gender:"Girls", color:"#8A5A34", colorName:"Brown", price:1299, brand:"Little Kinder", sizes:["10C","11C","12C","13C","1"], photoTag:"kids-shoes"},
+  // UNISEX ACCESSORIES
+  {id:14, name:"Tan Leather Belt", cat:"Accessories", gender:"Unisex", color:"#8A5A34", colorName:"Brown", price:799, brand:"Roots & Rivet", sizes:["Free"], photoTag:"leather-belt"},
+  {id:17, name:"Gold Statement Earrings", cat:"Accessories", gender:"Women", color:"#C9A227", colorName:"Yellow", price:999, brand:"Studio Noir", sizes:["Free"], photoTag:"gold-earrings"},
+  {id:33, name:"Classic Sunglasses", cat:"Accessories", gender:"Unisex", color:"#14171F", colorName:"Black", price:1199, brand:"Sunday Field", sizes:["Free"], photoTag:"sunglasses"},
+  {id:34, name:"Woven Straw Tote", cat:"Accessories", gender:"Women", color:"#C9A876", colorName:"Beige", price:1499, brand:"Meadow & Co", sizes:["Free"], photoTag:"straw-bag"},
+];
+const GENDERS = ["All","Men","Women","Boys","Girls","Unisex"];
+const TILES = [
+  {label:"Men", gender:"Men", cat:"Shirts", color:"#3B5998", photo:"1624835567150-0c530a20d8cc"},
+  {label:"Women", gender:"Women", cat:"Dresses", color:"#6B4E71", photo:"1633077705107-8f53a004218f"},
+  {label:"Boys", gender:"Boys", cat:"Shirts", color:"#6B9AC4", photo:"1502451885777-16c98b07834a"},
+  {label:"Girls", gender:"Girls", cat:"Dresses", color:"#E8A9B8", photo:"1620774760711-caa4c94d683a"},
+  {label:"Accessories", gender:"Unisex", cat:"Accessories", color:"#8A5A34", photo:"1590995385808-7eb142fde16a"},
+];
+
+/* ============================= STATE ============================= */
+let state = {
+  users: [], currentUser: null, isAdmin: false,
+  cart: [], orders: [],
+  filters: {gender:"All", cat:"All", brand:"All", size:"All", color:"All", sort:"featured"},
+  chatHistory: []
+};
+
+/* ============================= COLOUR ENGINE ============================= */
+function hexToHsl(hex){
+  let r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
+  let max=Math.max(r,g,b), min=Math.min(r,g,b), h,s,l=(max+min)/2;
+  if(max===min){h=s=0;} else {
+    let d=max-min;
+    s = l>0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max){
+      case r: h=(g-b)/d+(g<b?6:0); break;
+      case g: h=(b-r)/d+2; break;
+      case b: h=(r-g)/d+4; break;
+    }
+    h*=60;
+  }
+  return {h, s:s*100, l:l*100};
+}
+function hslToHex(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2;
+  let r=0,g=0,b=0;
+  if(h<60){r=c;g=x;b=0;} else if(h<120){r=x;g=c;b=0;} else if(h<180){r=0;g=c;b=x;}
+  else if(h<240){r=0;g=x;b=c;} else if(h<300){r=x;g=0;b=c;} else {r=c;g=0;b=x;}
+  const toHex = v => Math.round((v+m)*255).toString(16).padStart(2,'0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+function isNeutral(hex){ const {s,l} = hexToHsl(hex); return s < 14 || l > 92 || l < 12; }
+function hueDist(a,b){ let d=Math.abs(a-b)%360; return d>180?360-d:d; }
+function toneName(hex){
+  const {h,s,l} = hexToHsl(hex);
+  if(isNeutral(hex)) return l>80?"Off-white / cream neutral":(l<20?"Deep black neutral":"Warm grey neutral");
+  const names=[[15,"Warm red"],[40,"Rust orange"],[55,"Amber"],[65,"Mustard"],[85,"Olive"],[150,"Emerald green"],[170,"Sage green"],[195,"Teal"],[220,"Denim blue"],[250,"Indigo"],[280,"Plum purple"],[320,"Berry pink"],[345,"Coral rose"],[360,"Warm red"]];
+  let best=names[0];
+  for(const n of names) if(hueDist(h,n[0])<hueDist(h,best[0])) best=n;
+  return best[1] + (l>65?" (light)":l<35?" (deep)":"");
+}
+function getPaletteFor(hex){
+  const {h,s,l} = hexToHsl(hex);
+  const sat = Math.max(45, Math.min(s,70));
+  const light = Math.max(35, Math.min(l,60));
+  const complementary = hslToHex(h+180, sat, light);
+  const analogous1 = hslToHex(h+30, sat, light);
+  const analogous2 = hslToHex(h-30, sat, light);
+  const triadic1 = hslToHex(h+120, sat, light);
+  const triadic2 = hslToHex(h-120, sat, light);
+  return {
+    base: hex,
+    swatches: [
+      {hex, label:"Your colour"}, {hex: complementary, label:"Complementary"},
+      {hex: analogous1, label:"Analogous +30°"}, {hex: analogous2, label:"Analogous -30°"},
+      {hex: "#14171F", label:"Neutral: black"}, {hex: "#F1ECE3", label:"Neutral: ivory"}, {hex: "#8A5A34", label:"Neutral: tan"},
+    ],
+    targets: [complementary, analogous1, analogous2, triadic1, triadic2]
+  };
+}
+function findMatches(hex, excludeCat, genderPref){
+  const {targets} = getPaletteFor(hex);
+  let pool = PRODUCTS.filter(p => p.cat !== excludeCat);
+  if(genderPref) pool = pool.filter(p => p.gender===genderPref || p.gender==="Unisex");
+  const scored = pool.map(p => {
+      if(isNeutral(p.color)) return {p, score: 6};
+      const ph = hexToHsl(p.color).h;
+      const best = Math.min(...targets.map(t => hueDist(ph, hexToHsl(t).h)));
+      return {p, score: best};
+    }).sort((a,b)=>a.score-b.score).slice(0,4).map(x=>x.p);
+  return scored;
+}
+
+/* ============================= NAV ============================= */
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('active'));
+  const btn = document.querySelector(`.navbtn[data-nav="${name}"]`);
+  if(btn) btn.classList.add('active');
+  if(name==='shop') renderShop();
+  if(name==='cart') renderCart();
+  if(name==='match') renderMatchTool();
+  if(name==='admin') renderAdmin();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ============================= HERO WHEEL + HOME ============================= */
+function buildHeroWheel(){
+  const colors = ["#FF6B4A","#E8B84B","#7C9585","#6B4E71","#3B5998","#B5562B","#1F6F54","#C9A227"];
+  const n = colors.length, cx=150, cy=150, rOuter=140, rInner=48;
+  let html = "";
+  for(let i=0;i<n;i++){
+    const a0 = (i/n)*2*Math.PI - Math.PI/2, a1 = ((i+1)/n)*2*Math.PI - Math.PI/2;
+    const x0=cx+rOuter*Math.cos(a0), y0=cy+rOuter*Math.sin(a0);
+    const x1=cx+rOuter*Math.cos(a1), y1=cy+rOuter*Math.sin(a1);
+    const xi0=cx+rInner*Math.cos(a0), yi0=cy+rInner*Math.sin(a0);
+    const xi1=cx+rInner*Math.cos(a1), yi1=cy+rInner*Math.sin(a1);
+    html += `<path d="M${xi0} ${yi0} L${x0} ${y0} A${rOuter} ${rOuter} 0 0 1 ${x1} ${y1} L${xi1} ${yi1} A${rInner} ${rInner} 0 0 0 ${xi0} ${yi0} Z" fill="${colors[i]}" opacity="0.92"/>`;
+  }
+  document.getElementById('heroWheelSegments').innerHTML = html;
+}
+function buildHomeTiles(){
+  document.getElementById('tileGrid').innerHTML = TILES.map(t=>`
+    <div class="tile" onclick="shopByGender('${t.gender}')">
+      <img src="${photoUrl(t.photo)}" alt="${t.label}" loading="lazy" data-color="${t.color}" data-cat="${t.cat}"
+        style="width:100%;height:100%;object-fit:cover;display:block;" onerror="handleImgError(this)">
+      <div class="tilelabel">${t.label}</div>
+    </div>`).join('');
+  document.getElementById('featuredGrid').innerHTML = PRODUCTS.slice(0,4).map(renderCard).join('');
+}
+function shopByGender(g){ state.filters.gender=g; showView('shop'); }
+
+/* ============================= SHOP / FILTERS ============================= */
+function uniq(arr){ return [...new Set(arr)]; }
+function buildFilterControls(){
+  document.getElementById('genderBar').innerHTML = GENDERS.map(g=>
+    `<button class="chip ${state.filters.gender===g?'active':''}" onclick="setGender('${g}')">${g}</button>`).join('');
+  const cats = ["All", ...uniq(PRODUCTS.map(p=>p.cat)).sort()];
+  const brands = ["All", ...uniq(PRODUCTS.map(p=>p.brand)).sort()];
+  const sizes = ["All", ...uniq(PRODUCTS.flatMap(p=>p.sizes))];
+  const colors = ["All", ...uniq(PRODUCTS.map(p=>p.colorName)).sort()];
+  document.getElementById('fCat').innerHTML = cats.map(c=>`<option value="${c}" ${state.filters.cat===c?'selected':''}>${c==='All'?'Category: All':c}</option>`).join('');
+  document.getElementById('fBrand').innerHTML = brands.map(c=>`<option value="${c}" ${state.filters.brand===c?'selected':''}>${c==='All'?'Brand: All':c}</option>`).join('');
+  document.getElementById('fSize').innerHTML = sizes.map(c=>`<option value="${c}" ${state.filters.size===c?'selected':''}>${c==='All'?'Size: All':c}</option>`).join('');
+  document.getElementById('fColor').innerHTML = colors.map(c=>`<option value="${c}" ${state.filters.color===c?'selected':''}>${c==='All'?'Colour: All':c}</option>`).join('');
+  document.getElementById('fSort').value = state.filters.sort;
+}
+function setGender(g){ state.filters.gender=g; applyFilters(); }
+function applyFilters(){
+  state.filters.cat = document.getElementById('fCat').value;
+  state.filters.brand = document.getElementById('fBrand').value;
+  state.filters.size = document.getElementById('fSize').value;
+  state.filters.color = document.getElementById('fColor').value;
+  state.filters.sort = document.getElementById('fSort').value;
+  renderShop();
+}
+function renderCard(p){
+  return `<div class="card" onclick="openProduct(${p.id})" style="cursor:pointer;">
+      <div class="imgwrap">${imgTag(p)}</div>
+      <div class="info">
+        <div class="cat"><span>${p.cat}</span><span>${p.gender}</span></div>
+        <h3>${p.name}</h3>
+        <div class="brand">${p.brand}</div>
+        <div class="row"><span class="price">₹${p.price}</span><span class="swatchdot" style="background:${p.color}"></span></div>
+      </div>
+    </div>`;
+}
+function renderShop(){
+  buildFilterControls();
+  const f = state.filters;
+  let list = PRODUCTS.filter(p =>
+    (f.gender==='All' || p.gender===f.gender || (f.gender!=='Unisex' && p.gender==='Unisex')) &&
+    (f.cat==='All' || p.cat===f.cat) &&
+    (f.brand==='All' || p.brand===f.brand) &&
+    (f.size==='All' || p.sizes.includes(f.size)) &&
+    (f.color==='All' || p.colorName===f.color)
+  );
+  if(f.sort==='lowhigh') list = list.slice().sort((a,b)=>a.price-b.price);
+  if(f.sort==='highlow') list = list.slice().sort((a,b)=>b.price-a.price);
+  if(f.sort==='az') list = list.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  document.getElementById('resultCount').textContent = list.length + ' item' + (list.length!==1?'s':'');
+  document.getElementById('productGrid').innerHTML = list.length ? list.map(renderCard).join('') :
+    `<div class="empty" style="grid-column:1/-1;"><div class="big">🔍</div><p>Nothing matches those filters. Try widening your search.</p></div>`;
+}
+function openProduct(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  document.getElementById('productDetailBody').innerHTML = `
+    <div class="pd-img">${imgTag(p)}</div>
+    <div>
+      <div class="cat" style="margin-bottom:8px;"><span>${p.cat} · ${p.gender}</span><span>${p.brand}</span></div>
+      <h1 class="display" style="font-size:32px;margin-bottom:10px;">${p.name}</h1>
+      <div class="price" style="font-size:20px;margin-bottom:6px;">₹${p.price}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span class="swatchdot" style="background:${p.color};width:20px;height:20px;"></span>
+        <span class="tonelabel">${toneName(p.color)} · ${p.color}</span>
+      </div>
+      <div class="tonelabel" style="margin-bottom:4px;">Size</div>
+      <div class="sizerow">${p.sizes.map((s,i)=>`<button class="sizebtn ${i===0?'sel':''}" onclick="selectSize(this)">${s}</button>`).join('')}</div>
+      <button class="btn" onclick="addToCart(${p.id})">Add to cart</button>
+      <button class="btn ghost" style="margin-left:10px;" onclick="showView('match');document.getElementById('colorInput').value='${p.color}';onColorPick('${p.color}')">Explore this colour →</button>
+    </div>
+  `;
+  document.getElementById('matchExplain').textContent = `Based on ${p.name}'s ${toneName(p.color).toLowerCase()}, here's what pairs well from other categories for ${p.gender.toLowerCase()==='unisex'?'anyone':p.gender.toLowerCase()}.`;
+  document.getElementById('pdMatches').innerHTML = findMatches(p.color, p.cat, p.gender==='Unisex'?null:p.gender).map(renderMatchCard).join('');
+  showView('product');
+}
+function selectSize(btn){ btn.parentElement.querySelectorAll('.sizebtn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
+function renderMatchCard(p){
+  return `<div class="card" onclick="openProduct(${p.id})" style="cursor:pointer;">
+      <div class="imgwrap">${imgTag(p)}</div>
+      <div class="info">
+        <div class="cat"><span>${p.cat}</span><span>${p.gender}</span></div>
+        <h3 style="font-size:14.5px;">${p.name}</h3>
+        <div class="row"><span class="price" style="font-size:12.5px;">₹${p.price}</span><span class="swatchdot" style="background:${p.color}"></span></div>
+      </div>
+    </div>`;
+}
+
+/* ============================= COLOR MATCH TOOL ============================= */
+function renderMatchTool(){ onColorPick(document.getElementById('colorInput').value); }
+function onColorPick(hex){
+  document.getElementById('hexOut').textContent = hex.toUpperCase();
+  document.getElementById('toneOut').textContent = toneName(hex);
+  const palette = getPaletteFor(hex);
+  document.getElementById('paletteRow').innerHTML = palette.swatches.map(s=>`<div class="paletteswatch" style="background:${s.hex}"><span>${s.label}</span></div>`).join('');
+  const {h} = hexToHsl(hex);
+  document.getElementById('theoryExplain').innerHTML = isNeutral(hex)
+    ? `<strong>${hex.toUpperCase()}</strong> is a neutral tone — low in saturation or very light/dark — so it pairs with almost anything. Neutrals are the safest anchor for an outfit.`
+    : `<strong>${hex.toUpperCase()}</strong> sits at roughly ${Math.round(h)}° on the colour wheel. Its <strong>complementary</strong> colour (180° away) gives the boldest pairing. The two <strong>analogous</strong> colours (±30°) give a calmer, tonal look. Neutrals — black, ivory, tan — work with it regardless of hue.`;
+  document.getElementById('toolMatches').innerHTML = findMatches(hex, null, null).map(renderMatchCard).join('');
+}
+
+/* ============================= CART ============================= */
+function addToCart(id){
+  const line = state.cart.find(c=>c.id===id);
+  if(line) line.qty++; else state.cart.push({id, qty:1});
+  updateCartCount();
+}
+function updateCartCount(){ document.getElementById('cartCount').textContent = state.cart.reduce((a,c)=>a+c.qty,0); }
+function changeQty(id, delta){
+  const line = state.cart.find(c=>c.id===id);
+  if(!line) return;
+  line.qty += delta;
+  if(line.qty<=0) state.cart = state.cart.filter(c=>c.id!==id);
+  renderCart(); updateCartCount();
+}
+function cartTotal(){ return state.cart.reduce((sum,c)=>{ const p = PRODUCTS.find(x=>x.id===c.id); return sum + p.price*c.qty; },0); }
+function renderCart(){
+  const body = document.getElementById('cartBody');
+  if(state.cart.length===0){
+    body.innerHTML = `<div class="empty"><div class="big">🧺</div><p>Your cart is empty. Go find something that matches.</p><button class="btn" style="margin-top:12px;" onclick="showView('shop')">Browse the shop</button></div>`;
+    return;
+  }
+  const rows = state.cart.map(c=>{
+    const p = PRODUCTS.find(x=>x.id===c.id);
+    return `<div class="cartrow">
+      ${imgTag(p)}
+      <div style="flex:1;"><div style="font-weight:600;font-size:14.5px;">${p.name}</div><div class="tonelabel">${p.cat} · ${p.gender} · ₹${p.price}</div></div>
+      <button class="qtybtn" onclick="changeQty(${p.id},-1)">−</button>
+      <span style="font-family:var(--font-mono);width:20px;text-align:center;">${c.qty}</span>
+      <button class="qtybtn" onclick="changeQty(${p.id},1)">+</button>
+      <div style="width:80px;text-align:right;font-family:var(--font-mono);">₹${p.price*c.qty}</div>
+    </div>`;
+  }).join('');
+  const total = cartTotal();
+  body.innerHTML = `<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:32px;">
+      <div>${rows}</div>
+      <div class="cartsummary">
+        <div class="sumrow"><span>Subtotal</span><span>₹${total}</span></div>
+        <div class="sumrow"><span>Shipping</span><span>${total>2500?'Free':'₹99'}</span></div>
+        <div class="sumrow total"><span>Total</span><span>₹${total>2500?total:total+99}</span></div>
+        <button class="btn full" style="margin-top:16px;" onclick="checkout()">${state.currentUser?'Place order':'Log in to check out'}</button>
+      </div>
+    </div>`;
+}
+function checkout(){
+  if(!state.currentUser){ showView('login'); return; }
+  const total = cartTotal();
+  state.orders.push({ id: 'ORD'+(state.orders.length+1).toString().padStart(3,'0'), customer: state.currentUser.name, items: state.cart.reduce((a,c)=>a+c.qty,0), total: total>2500?total:total+99 });
+  state.cart = [];
+  updateCartCount(); renderCart();
+  alert('Order placed! Thanks, ' + state.currentUser.name + '.');
+}
+
+/* ============================= AUTH ============================= */
+function doRegister(){
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('regPass').value;
+  const msg = document.getElementById('regMsg');
+  if(!name || !email || pass.length<6){ msg.innerHTML='<div class="msg err">Fill every field — password needs 6+ characters.</div>'; return; }
+  if(state.users.find(u=>u.email===email)){ msg.innerHTML='<div class="msg err">That email is already registered.</div>'; return; }
+  state.users.push({name, email, pass});
+  msg.innerHTML='<div class="msg ok">Account created — you can log in now.</div>';
+  setTimeout(()=>showView('login'),700);
+}
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  const msg = document.getElementById('loginMsg');
+  const user = state.users.find(u=>u.email===email && u.pass===pass);
+  if(!user){ msg.innerHTML='<div class="msg err">No match. Check your email/password, or register.</div>'; return; }
+  state.currentUser = user;
+  document.getElementById('userChip').textContent = 'Hi, ' + user.name.split(' ')[0];
+  document.getElementById('authNavBtn').textContent = 'Account';
+  document.getElementById('authNavBtn').onclick = () => logout();
+  showView('home');
+}
+function logout(){
+  state.currentUser = null;
+  document.getElementById('userChip').textContent = '';
+  document.getElementById('authNavBtn').textContent = 'Login';
+  document.getElementById('authNavBtn').onclick = () => showView('login');
+  showView('home');
+}
+
+/* ============================= ADMIN ============================= */
+function doAdminLogin(){
+  const email = document.getElementById('adminEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('adminPass').value;
+  const msg = document.getElementById('adminMsg');
+  if(email==='admin@stylesense.ai' && pass==='admin123'){ state.isAdmin = true; renderAdmin(); }
+  else { msg.innerHTML = '<div class="msg err">Incorrect admin credentials.</div>'; }
+}
+function adminLogout(){ state.isAdmin=false; renderAdmin(); }
+function renderAdmin(){
+  const loginWrap = document.getElementById('adminLoginWrap');
+  const dashWrap = document.getElementById('adminDashWrap');
+  if(!state.isAdmin){ loginWrap.style.display='block'; dashWrap.style.display='none'; return; }
+  loginWrap.style.display='none'; dashWrap.style.display='block';
+  document.getElementById('statUsers').textContent = state.users.length;
+  document.getElementById('statProducts').textContent = PRODUCTS.length;
+  document.getElementById('statOrders').textContent = state.orders.length;
+  document.getElementById('statRevenue').textContent = '₹'+state.orders.reduce((a,o)=>a+o.total,0);
+  document.getElementById('ordersTable').innerHTML = state.orders.length ? state.orders.map(o=>`<tr><td>${o.id}</td><td>${o.customer}</td><td>${o.items}</td><td>₹${o.total}</td></tr>`).join('') : `<tr><td colspan="4" style="color:rgba(20,23,31,.5);">No orders yet this session.</td></tr>`;
+  document.getElementById('usersTable').innerHTML = state.users.length ? state.users.map(u=>`<tr><td>${u.name}</td><td>${u.email}</td></tr>`).join('') : `<tr><td colspan="2" style="color:rgba(20,23,31,.5);">No users registered yet.</td></tr>`;
+}
+
+/* ============================= CHATBOT ============================= */
+function toggleChat(){ document.getElementById('chatPanel').classList.toggle('open'); }
+function pushBubble(text, who){
+  const body = document.getElementById('chatBody');
+  const el = document.createElement('div');
+  el.className = 'bubble ' + who;
+  el.textContent = text;
+  body.appendChild(el);
+  body.scrollTop = body.scrollHeight;
+  return el;
+}
+function pushProductPicks(products){
+  if(!products.length) return;
+  const body = document.getElementById('chatBody');
+  const wrap = document.createElement('div');
+  wrap.className = 'chatpicks';
+  wrap.innerHTML = products.map(p=>`<div class="chatpick" onclick="toggleChat();openProduct(${p.id})">${imgTag(p)}<span>${p.name}</span></div>`).join('');
+  body.appendChild(wrap);
+  body.scrollTop = body.scrollHeight;
+}
+function sendSuggested(text){ document.getElementById('chatInput').value = text; sendChat(); }
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value='';
+  pushBubble(text, 'user');
+  state.chatHistory.push({role:'user', content:text});
+  const typing = pushBubble('thinking about tones…', 'bot typing');
+
+  const catalogueBrief = PRODUCTS.map(p=>`${p.name} | ${p.cat} | ${p.gender} | colour ${p.color} | ₹${p.price}`).join('\n');
+  const system = `You are the StyleSense AI stylist inside a fashion e-commerce page selling for men, women, boys and girls. Read the user's request carefully (who it's for, what item/colour they already have, the occasion) and give short, warm, concrete advice (3-5 sentences), grounded in real colour theory (complementary/analogous/neutral pairing).
+You MUST end your reply with a line formatted exactly like this: PICKS: Name1 | Name2 (choose 2-3 EXACT product names from the catalogue below that fit the gender/age and colour implied by the request — never invent names, never pick items for the wrong gender).
+Catalogue:
+${catalogueBrief}`;
+
+  try{
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:400, system, messages: state.chatHistory })
+    });
+    const data = await resp.json();
+    typing.remove();
+    let reply = (data.content||[]).map(b=>b.text||'').join('\n').trim() || "Sorry, I couldn't find the words for that one — try rephrasing?";
+    let picks = [];
+    const pickMatch = reply.match(/PICKS:\s*(.+)$/i);
+    if(pickMatch){
+      const names = pickMatch[1].split('|').map(s=>s.trim().toLowerCase());
+      picks = PRODUCTS.filter(p=>names.includes(p.name.toLowerCase()));
+      reply = reply.replace(/PICKS:\s*(.+)$/i, '').trim();
+    }
+    pushBubble(reply, 'bot');
+    pushProductPicks(picks);
+    state.chatHistory.push({role:'assistant', content:reply});
+  }catch(err){
+    typing.remove();
+    pushBubble("I couldn't reach the stylist engine just now. Rule of thumb: pair bold colours with a neutral (black, white, tan or denim), and use the Color Match tab for an exact palette.", 'bot');
+  }
+}
+
+/* ============================= INIT ============================= */
+buildHeroWheel();
+buildHomeTiles();
+onColorPick('#3B5998');
+updateCartCount();
+pushBubble("Hi! Tell me who it's for and the colour of something you own — a shirt, kurti, dress — and I'll tell you what to pair it with, with real picks from the shop.", 'bot');
+</script>
+</body>
+</html>
